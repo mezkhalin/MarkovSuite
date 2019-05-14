@@ -141,8 +141,16 @@ namespace MarkovSuite
             }
         }
 
+        private void SaveAsCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            Context.FileName = Context.ChainName = "";
+            SaveCommandBinding_Executed(sender, e);
+        }
+
         private void SaveCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
+            Console.WriteLine(sender.GetType());
+
             Console.WriteLine("Saving file");
             bool? result;
 
@@ -159,7 +167,7 @@ namespace MarkovSuite
                 saveDialog.InitialDirectory = AppSavePath;
 
                 result = saveDialog.ShowDialog();
-                Context.FileName = saveDialog.FileName;
+                if(result == true) Context.FileName = saveDialog.FileName;
             }
 
             if (result == true)

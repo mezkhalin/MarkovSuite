@@ -10,6 +10,7 @@
         <CommandBinding Command="New" CanExecute="CommonCommandBinding_CanExecute" Executed="NewCommandBinding_Executed" />
         <CommandBinding Command="Open" CanExecute="CommonCommandBinding_CanExecute" Executed="OpenCommandBinding_Executed" />
         <CommandBinding Command="Save" CanExecute="SaveCommandBinding_CanExecute" Executed="SaveCommandBinding_Executed" />
+        <CommandBinding Command="SaveAs" CanExecute="CommonCommandBinding_CanExecute" Executed="SaveAsCommandBinding_Executed" />
     </Window.CommandBindings>
     <DockPanel>
         
@@ -25,8 +26,11 @@
                 <Button Command="Open">
                     <Image Source="/Icons/OpenFolder_16x.png" />
                 </Button>
-                <Button Command="Save">
+                <Button Command="Save" x:Name="SaveButton">
                     <Image Source="/Icons/Save_16x.png" />
+                </Button>
+                <Button Command="SaveAs" x:Name="SaveAsButton">
+                    <Image Source="/Icons/SaveAs_16x.png" />
                 </Button>
             </ToolBar>
         </ToolBarTray>
@@ -35,12 +39,19 @@
 
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1.1*"/>
-                <ColumnDefinition Width=".8*"/>
-                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="5" />
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <ListBox Grid.Column="0" Margin="5" x:Name="RootListBox" ItemsSource="{Binding Words}" HorizontalContentAlignment="Stretch" SelectionChanged="RootListBox_SelectionChanged">
+            <Grid Grid.Column="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.1*"/>
+                    <ColumnDefinition Width="5" />
+                    <ColumnDefinition Width=".8*"/>
+                </Grid.ColumnDefinitions>
+                
+                <ListBox Grid.Column="0" Margin="5" x:Name="RootListBox" ItemsSource="{Binding Words}" HorizontalContentAlignment="Stretch" SelectionChanged="RootListBox_SelectionChanged">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <Grid>
@@ -57,31 +68,38 @@
                 </ListBox.ItemTemplate>
             </ListBox>
 
-            <ListBox Grid.Column="1" Margin="5" x:Name="ChildListBox" HorizontalContentAlignment="Stretch">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="20" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="{Binding Data}"/>
-                            <CheckBox Grid.Column="1" IsEnabled="false" IsChecked="{Binding IsEnding}" />
-                        </Grid>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+                <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch"/>
+
+                <ListBox Grid.Column="2" Margin="5" x:Name="ChildListBox" HorizontalContentAlignment="Stretch">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="20" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding Data}"/>
+                                <CheckBox Grid.Column="1" IsEnabled="false" IsChecked="{Binding IsEnding}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+
+            <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch"/>
 
             <Grid Grid.Column="2" Margin="5">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="5"/>
+                    <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <DockPanel DockPanel.Dock="Top" Height="Auto" Grid.Row="0" Margin="0,0,0,5">
                     <Button DockPanel.Dock="Bottom" HorizontalAlignment="Right" Content="Learn" Padding="5,2,5,2" Click="LearnButton_Click"/>
                     <TextBox x:Name="LearnTextBox" Margin="0,0,0,5" Text="The cat ate the dog.&#xD;&#xA;And all was well with the world." HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Visible" AcceptsReturn="True"/>
                 </DockPanel>
-                <DockPanel DockPanel.Dock="Top" Height="Auto" Grid.Row="1">
+                <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch" Margin="-5,0,0,0"/>
+                <DockPanel DockPanel.Dock="Top" Height="Auto" Grid.Row="2" Margin="0,5,0,0">
                     <DockPanel DockPanel.Dock="Bottom">
                         <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
                             <Slider x:Name="NumSentences" Width="120" Value="5" Maximum="50" SmallChange="1" LargeChange="5" TickPlacement="BottomRight" IsSnapToTickEnabled="True" />

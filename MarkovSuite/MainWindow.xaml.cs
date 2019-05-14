@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Win32;
+using System;
+using System.IO;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace MarkovSuite
 {
@@ -20,6 +14,19 @@ namespace MarkovSuite
     /// </summary>
     public partial class MainWindow : Window
     {
+        private static string m_appSavePath;
+        public static string AppSavePath
+        {
+            get
+            {
+                if(m_appSavePath == null || m_appSavePath == "")
+                    m_appSavePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\MarkovSuite\\";
+
+                System.IO.Directory.CreateDirectory(m_appSavePath);
+                return m_appSavePath;
+            }
+        }
+
         private MarkovData Context;
 
         public MainWindow()
@@ -55,6 +62,114 @@ namespace MarkovSuite
             if(RootListBox.SelectedItem != null)
             {
                 ChildListBox.ItemsSource = (RootListBox.SelectedItem as Word).Children;
+            }
+        }
+
+        private void CommonCommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+
+        private void SaveCommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            if (Context == null)
+                e.CanExecute = false;
+            else
+                e.CanExecute = Context.HasChanged;
+        }
+
+        private MessageBoxResult AskForSave ()
+        {
+            if (!Context.HasChanged)
+                return MessageBoxResult.No;
+
+            string msg = "Changes have been made. Do you want to save them?";
+            MessageBoxButton button = MessageBoxButton.YesNoCancel;
+            MessageBoxImage icon = MessageBoxImage.Warning;
+
+            return MessageBox.Show(msg, "Save changes?", button, icon);
+        }
+
+        private void NewCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            MessageBoxResult result = AskForSave();
+            Console.WriteLine(result);
+            switch(result)
+            {
+                case MessageBoxResult.Cancel:
+                    return;
+                case MessageBoxResult.No:
+                    Init();
+                    return;
+                case MessageBoxResult.Yes:
+                    SaveCommandBinding_Executed(sender, e);
+                    Init();
+                    return;
+            }
+        }
+
+        private void OpenCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            Console.WriteLine("Opening file");
+            MessageBoxResult sresult = AskForSave();
+            switch (sresult)
+            {
+                case MessageBoxResult.Cancel:
+                    return;
+                case MessageBoxResult.Yes:
+                    SaveCommandBinding_Executed(sender, e);
+                    break;
+                case MessageBoxResult.No:
+                    break;
+            }
+
+            OpenFileDialog openDialog = new OpenFileDialog();
+            openDialog.Filter = "Markov Suite Chain|*.chain";
+            openDialog.Title = "Open chain";
+            openDialog.InitialDirectory = AppSavePath;
+
+            bool? result = openDialog.ShowDialog();
+            if (result == true && openDialog.FileName != "")
+            {
+                IFormatter formatter = new BinaryFormatter();
+                Stream stream = new FileStream(openDialog.FileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+                MarkovData data = (MarkovData)formatter.Deserialize(stream);
+                stream.Close();
+
+                Context = data;
+                DataContext = Context;
+            }
+        }
+
+        private void SaveCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            Console.WriteLine("Saving file");
+            bool? result;
+
+            if (Context.FileName != "" || Context.FileName == null)
+            {
+                result = true;
+            }
+            else
+            {
+                SaveFileDialog saveDialog = new SaveFileDialog();
+                saveDialog.FileName = Context.ChainName;
+                saveDialog.Filter = "Markov Suite Chain|*.chain";
+                saveDialog.Title = "Save chain";
+                saveDialog.InitialDirectory = AppSavePath;
+
+                result = saveDialog.ShowDialog();
+                Context.FileName = saveDialog.FileName;
+            }
+
+            if (result == true)
+            {
+                Console.WriteLine("Saving...\t" + Context.FileName);
+                IFormatter formatter = new BinaryFormatter();
+                Stream stream = new FileStream(Context.FileName, FileMode.Create, FileAccess.Write, FileShare.None);
+                formatter.Serialize(stream, Context);
+                stream.Close();
+                Context.HasChanged = false;
             }
         }
     }

@@ -6,20 +6,26 @@
         xmlns:local="clr-namespace:MarkovSuite"
         mc:Ignorable="d"
         Title="{Binding ChainName, StringFormat='Markov Suite - {0}'}" Height="450" Width="800" MinHeight="325" MinWidth="600">
+    <Window.CommandBindings>
+        <CommandBinding Command="New" CanExecute="CommonCommandBinding_CanExecute" Executed="NewCommandBinding_Executed" />
+        <CommandBinding Command="Open" CanExecute="CommonCommandBinding_CanExecute" Executed="OpenCommandBinding_Executed" />
+        <CommandBinding Command="Save" CanExecute="SaveCommandBinding_CanExecute" Executed="SaveCommandBinding_Executed" />
+    </Window.CommandBindings>
     <DockPanel>
+        
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="_File" />
         </Menu>
 
         <ToolBarTray DockPanel.Dock="Top">
             <ToolBar>
-                <Button>
+                <Button Command="New">
                     <Image Source="/Icons/NewFile_16x.png" />
                 </Button>
-                <Button>
+                <Button Command="Open">
                     <Image Source="/Icons/OpenFolder_16x.png" />
                 </Button>
-                <Button>
+                <Button Command="Save">
                     <Image Source="/Icons/Save_16x.png" />
                 </Button>
             </ToolBar>

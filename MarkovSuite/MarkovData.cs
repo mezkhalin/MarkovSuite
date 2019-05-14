@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace MarkovSuite
 {
+    [Serializable]
     public struct ChildWord
     {
         public string Data { get; set; }
@@ -20,6 +21,7 @@ namespace MarkovSuite
         }
     }
 
+    [Serializable]
     public class Word : INotifyPropertyChanged
     {
         public string Data { get; set; }
@@ -32,14 +34,15 @@ namespace MarkovSuite
             get { return m_prevalence; }
             set
             {
-                if(m_prevalence != value)
+                if (m_prevalence != value)
                 {
                     m_prevalence = value;
                     NotifyPropertyChanged("Prevalence");
                 }
             }
         }
-
+        
+        [field:NonSerialized]
         public event PropertyChangedEventHandler PropertyChanged;
         public void NotifyPropertyChanged(string propName)
         {
@@ -55,10 +58,15 @@ namespace MarkovSuite
         }
     }
 
-    public class MarkovData : INotifyPropertyChanged
+    [Serializable]
+    public class MarkovData /*: INotifyPropertyChanged*/
     {
+        public bool HasChanged { get; set; } = false;
+        public string FileName { get; set; } = "";
+        public string ChainName { get; set; } = "Untitled";
         public ObservableCollection<Word> Words { get; set; }
-        private string m_chainName = "Untitled";
+
+        /*private string m_chainName = "Untitled";
         public string ChainName
         {
             get { return m_chainName; }
@@ -76,11 +84,23 @@ namespace MarkovSuite
         public void NotifyPropertyChanged(string propName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
-        }
+            HasChanged = true;
+        }*/
 
         public MarkovData()
         {
             Words = new ObservableCollection<Word>();
+            Init();
+        }
+
+        public void Init ()
+        {
+            Words.CollectionChanged += Words_CollectionChanged;
+        }
+
+        private void Words_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            HasChanged = true;
         }
 
         public Word Find (string word)

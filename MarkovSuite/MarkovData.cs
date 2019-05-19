@@ -87,6 +87,20 @@ namespace MarkovSuite
         public string ChainName { get; set; } = "Untitled";
         public ObservableCollection<Word> Words { get; set; }
 
+        [NonSerialized]
+        private string m_statusString = "Idle...";
+        public string StatusString
+        {
+            get { return m_statusString; }
+            set
+            {
+                m_statusString = value;
+                NotifyPropertyChanged("StatusString");
+            }
+        }
+        public bool AutoClear { get; set; } = false;        // auto clear input box after learning
+        public bool AutoRowbreak { get; set; } = false;     // auto rowbreak output box
+
         [field:NonSerialized]
         public event PropertyChangedEventHandler PropertyChanged;
         public void NotifyPropertyChanged(string propName)

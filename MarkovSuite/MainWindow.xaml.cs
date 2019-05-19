@@ -34,18 +34,46 @@ namespace MarkovSuite
         public MainWindow()
         {
             InitializeComponent();
-            Init();
+            InitContext();
+            RowbreakCheckBox.Click += RowbreakCheckBox_Click;
         }
 
-        private void Init ()
+        private void RowbreakCheckBox_Click(object sender, RoutedEventArgs e)
         {
+            updateContextValues();
+        }
+
+        private void InitContext ()
+        {
+            LearnTextBox.Text = OutputTextBox.Text =  "";
             Context = new MarkovData();
             DataContext = Context;
+            updateContextValues();
+
+            Context.StatusString = "Initialized";
+        }
+
+        /// <summary>
+        /// Explicitly updates window objects based on context data
+        /// </summary>
+        private void updateContextValues ()
+        {
+            switch (RowbreakCheckBox.IsChecked)
+            {
+                case false:
+                    OutputTextBox.TextWrapping = TextWrapping.NoWrap;
+                    break;
+                case true:
+                    OutputTextBox.TextWrapping = TextWrapping.WrapWithOverflow;
+                    break;
+            }
         }
 
         private void LearnButton_Click(object sender, RoutedEventArgs e)
         {
             Markov.Train(Context, LearnTextBox.Text);
+            if (Context.AutoClear)
+                LearnTextBox.Text = "";
         }
 
         private void GenerateButton_Click(object sender, RoutedEventArgs e)
@@ -55,8 +83,10 @@ namespace MarkovSuite
             {
                 output += Markov.Generate(Context) + " ";
             }
-            output += "\r\n";
+            output += "\r\n\r\n";
             OutputTextBox.Text += output;
+
+            Context.StatusString = "Generated " + NumSentences.Value + " sentences";
         }
 
         private void RootListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -95,28 +125,29 @@ namespace MarkovSuite
         private void NewCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             MessageBoxResult result = AskForSave();
-            Console.WriteLine(result);
             switch(result)
             {
                 case MessageBoxResult.Cancel:
+                    Context.StatusString = "Canceled by user";
                     return;
                 case MessageBoxResult.No:
-                    Init();
+                    InitContext();
                     return;
                 case MessageBoxResult.Yes:
                     SaveCommandBinding_Executed(sender, e);
-                    Init();
+                    InitContext();
                     return;
             }
         }
 
         private void OpenCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            Console.WriteLine("Opening file");
+            Context.StatusString = "Opening file...";
             MessageBoxResult sresult = AskForSave();
             switch (sresult)
             {
                 case MessageBoxResult.Cancel:
+                    Context.StatusString = "Canceled by user";
                     return;
                 case MessageBoxResult.Yes:
                     SaveCommandBinding_Executed(sender, e);
@@ -140,6 +171,8 @@ namespace MarkovSuite
 
                 Context = data;
                 DataContext = Context;
+
+                Context.StatusString = "Opened file " + Context.FilePath;
             }
         }
 
@@ -151,17 +184,15 @@ namespace MarkovSuite
 
         private void SaveCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            Console.WriteLine(sender.GetType());
-
-            Console.WriteLine("Saving file");
+            Context.StatusString = "Saving file...";
             bool? result;
 
-            if (Context.FilePath != "" || Context.FilePath == null)
+            if (Context.FilePath != "" || Context.FilePath == null)     // context already has a file path
             {
                 result = true;
             }
             else
-            {
+            {                                                           // otherwise ask user for a file path
                 SaveFileDialog saveDialog = new SaveFileDialog();
                 saveDialog.FileName = Context.ChainName;
                 saveDialog.Filter = "Markov Suite Chain|*.chain";
@@ -174,12 +205,15 @@ namespace MarkovSuite
 
             if (result == true)
             {
-                Console.WriteLine("Saving...\t" + Context.FilePath);
+                Context.StatusString = "Saving file...";
+
                 IFormatter formatter = new BinaryFormatter();
                 Stream stream = new FileStream(Context.FilePath, FileMode.Create, FileAccess.Write, FileShare.None);
                 Context.HasChanged = false;
                 formatter.Serialize(stream, Context);
                 stream.Close();
+
+                Context.StatusString = "Saved file to " + Context.FilePath;
             }
         }
     }

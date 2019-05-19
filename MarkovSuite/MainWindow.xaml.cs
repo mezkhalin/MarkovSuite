@@ -1,10 +1,12 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.Globalization;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 
 namespace MarkovSuite
@@ -143,7 +145,7 @@ namespace MarkovSuite
 
         private void SaveAsCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            Context.FileName = Context.ChainName = "";
+            Context.FilePath = "";
             SaveCommandBinding_Executed(sender, e);
         }
 
@@ -154,7 +156,7 @@ namespace MarkovSuite
             Console.WriteLine("Saving file");
             bool? result;
 
-            if (Context.FileName != "" || Context.FileName == null)
+            if (Context.FilePath != "" || Context.FilePath == null)
             {
                 result = true;
             }
@@ -167,18 +169,31 @@ namespace MarkovSuite
                 saveDialog.InitialDirectory = AppSavePath;
 
                 result = saveDialog.ShowDialog();
-                if(result == true) Context.FileName = saveDialog.FileName;
+                if(result == true) Context.FilePath = saveDialog.FileName;
             }
 
             if (result == true)
             {
-                Console.WriteLine("Saving...\t" + Context.FileName);
+                Console.WriteLine("Saving...\t" + Context.FilePath);
                 IFormatter formatter = new BinaryFormatter();
-                Stream stream = new FileStream(Context.FileName, FileMode.Create, FileAccess.Write, FileShare.None);
+                Stream stream = new FileStream(Context.FilePath, FileMode.Create, FileAccess.Write, FileShare.None);
+                Context.HasChanged = false;
                 formatter.Serialize(stream, Context);
                 stream.Close();
-                Context.HasChanged = false;
             }
+        }
+    }
+
+    public class TitleStringConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            return (string)values[0] + ((bool)values[1] ? "*" : "") + " | MarkovSuite";
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotSupportedException("Cannot convert back");
         }
     }
 }

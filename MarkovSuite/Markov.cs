@@ -32,7 +32,7 @@ namespace MarkovSuite
                 }
                 else
                 {
-                    cur = new Word(Strip(w), isStarter, isEnding);
+                    cur = new Word(context, Strip(w), isStarter, isEnding);
                     context.Words.Add(cur);
                 }
 

@@ -24,6 +24,7 @@ namespace MarkovSuite
     [Serializable]
     public class Word : INotifyPropertyChanged
     {
+        public MarkovData Source { get; set; }
         public string Data { get; set; }
         public bool IsStarting { get; set; }
         public bool IsEnding { get; set; }
@@ -38,6 +39,7 @@ namespace MarkovSuite
                 {
                     m_prevalence = value;
                     NotifyPropertyChanged("Prevalence");
+                    Source.NotifyPropertyChanged("Words");
                 }
             }
         }
@@ -49,43 +51,49 @@ namespace MarkovSuite
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         }
 
-        public Word(string data, bool isStarter, bool isEnding)
+        public Word(MarkovData source, string data, bool isStarting, bool isEnding)
         {
+            Source = source;
             Data = data;
-            IsStarting = isStarter;
+            IsStarting = isStarting;
             IsEnding = isEnding;
             Children = new ObservableCollection<ChildWord>();
+            Children.CollectionChanged += Children_CollectionChanged;
+        }
+
+        private void Children_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            Source.NotifyPropertyChanged("Words");
         }
     }
 
     [Serializable]
-    public class MarkovData /*: INotifyPropertyChanged*/
+    public class MarkovData : INotifyPropertyChanged
     {
-        public bool HasChanged { get; set; } = false;
-        public string FileName { get; set; } = "";
-        public string ChainName { get; set; } = "Untitled";
-        public ObservableCollection<Word> Words { get; set; }
-
-        /*private string m_chainName = "Untitled";
-        public string ChainName
+        private bool m_hasChanged = false;
+        public bool HasChanged
         {
-            get { return m_chainName; }
+            get { return m_hasChanged; }
             set
             {
-                if(m_chainName != value)
+                if(m_hasChanged != value)
                 {
-                    m_chainName = value;
-                    NotifyPropertyChanged("ChainName");
+                    m_hasChanged = value;
+                    NotifyPropertyChanged("HasChanged");
                 }
             }
         }
+        public string FilePath { get; set; } = "";
+        public string ChainName { get; set; } = "Untitled";
+        public ObservableCollection<Word> Words { get; set; }
 
+        [field:NonSerialized]
         public event PropertyChangedEventHandler PropertyChanged;
         public void NotifyPropertyChanged(string propName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
-            HasChanged = true;
-        }*/
+            if(propName != "HasChanged") HasChanged = true;
+        }
 
         public MarkovData()
         {

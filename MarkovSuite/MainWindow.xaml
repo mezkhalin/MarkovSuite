@@ -5,7 +5,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MarkovSuite"
         mc:Ignorable="d"
-        Title="{Binding ChainName, StringFormat='Markov Suite - {0}'}" Height="450" Width="800" MinHeight="325" MinWidth="600">
+        Height="450" Width="800" MinHeight="325" MinWidth="600">
+    <Window.Resources>
+        <local:TitleStringConverter x:Key="TitleStringConverter" />
+    </Window.Resources>
+    <Window.Title>
+        <MultiBinding Converter="{StaticResource TitleStringConverter}">
+            <Binding Path="ChainName"/>
+            <Binding Path="HasChanged"/>
+        </MultiBinding>
+    </Window.Title>
     <Window.CommandBindings>
         <CommandBinding Command="New" CanExecute="CommonCommandBinding_CanExecute" Executed="NewCommandBinding_Executed" />
         <CommandBinding Command="Open" CanExecute="CommonCommandBinding_CanExecute" Executed="OpenCommandBinding_Executed" />

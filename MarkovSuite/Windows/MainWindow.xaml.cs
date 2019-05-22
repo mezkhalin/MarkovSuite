@@ -2,6 +2,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows;
@@ -34,7 +35,7 @@ namespace MarkovSuite
         public MainWindow()
         {
             InitializeComponent();
-            InitContext();
+            InitContext(false);
             RowbreakCheckBox.Click += RowbreakCheckBox_Click;
         }
 
@@ -43,14 +44,15 @@ namespace MarkovSuite
             updateContextValues();
         }
 
-        private void InitContext ()
+        private void InitContext (bool clear = true)
         {
-            LearnTextBox.Text = OutputTextBox.Text =  "";
+            if(clear) LearnTextBox.Text = OutputTextBox.Text =  "";
             Context = new MarkovData();
             DataContext = Context;
             updateContextValues();
 
             Context.StatusString = "Initialized";
+            Context.HasChanged = false; // ugly fix for when haschanged = true on new context
         }
 
         /// <summary>
@@ -69,6 +71,18 @@ namespace MarkovSuite
             }
         }
 
+        private MessageBoxResult AskForSave()
+        {
+            if (!Context.HasChanged)
+                return MessageBoxResult.No;
+
+            string msg = "Changes have been made. Do you want to save them?";
+            MessageBoxButton button = MessageBoxButton.YesNoCancel;
+            MessageBoxImage icon = MessageBoxImage.Warning;
+
+            return MessageBox.Show(msg, "Save changes?", button, icon);
+        }
+
         private void LearnButton_Click(object sender, RoutedEventArgs e)
         {
             Markov.Train(Context, LearnTextBox.Text);
@@ -81,7 +95,7 @@ namespace MarkovSuite
             string output = "";
             for(int i = 0; i < NumSentences.Value; i++)
             {
-                output += Markov.Generate(Context) + " ";
+                output += Markov.Generate(Context).FirstCharToUpper() + " ";
             }
             output += "\r\n\r\n";
             OutputTextBox.Text += output;
@@ -110,16 +124,16 @@ namespace MarkovSuite
                 e.CanExecute = Context.HasChanged;
         }
 
-        private MessageBoxResult AskForSave ()
+        private void CommonEntryCommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            if (!Context.HasChanged)
-                return MessageBoxResult.No;
+            if (RootListBox == null) return;
+            e.CanExecute = RootListBox.SelectedItem != null;
+        }
 
-            string msg = "Changes have been made. Do you want to save them?";
-            MessageBoxButton button = MessageBoxButton.YesNoCancel;
-            MessageBoxImage icon = MessageBoxImage.Warning;
-
-            return MessageBox.Show(msg, "Save changes?", button, icon);
+        private void DeleteChildCommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            if (ChildListBox == null || RootListBox == null) return;
+            e.CanExecute = ChildListBox.SelectedItem != null && RootListBox.SelectedItem != null;
         }
 
         private void NewCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -214,6 +228,48 @@ namespace MarkovSuite
                 stream.Close();
 
                 Context.StatusString = "Saved file to " + Context.FilePath;
+            }
+        }
+
+        private void EditEntryCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            EditEntryWindow dialog = new EditEntryWindow((Word)RootListBox.SelectedItem);
+            dialog.ShowDialog();
+        }
+
+        private void DeleteEntryCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            MessageBoxResult result = MessageBox.Show("Are you sure? Deleting this entry will also delete all of its children.", "Delete entry?", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
+            if (result == MessageBoxResult.Cancel) return;
+
+            ChildListBox.ItemsSource = null;
+            Context.Words.Remove((Word)RootListBox.SelectedItem);
+        }
+
+        private void DeleteChildCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            MessageBoxResult result;
+            ChildWord target = (ChildWord)ChildListBox.SelectedItem;
+
+            result = MessageBox.Show("Are you sure you want to delete this child?", "Delete child?", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (result == MessageBoxResult.No) return;
+
+            result = MessageBox.Show("Do you want to delete the associated root word?\r\n(" + target.StrippedData + ")", "Delete root word?", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            Word root = (Word)RootListBox.SelectedItem;
+            root.Children.Remove(target);
+
+            if(result == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    root = Context.Words.Single(x => x.Data == target.StrippedData);
+                    Context.Words.Remove(root);
+                }
+                catch(Exception ex)
+                {
+                    MessageBox.Show("Error:\r\n" + ex.Message, "Error happens", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
     }

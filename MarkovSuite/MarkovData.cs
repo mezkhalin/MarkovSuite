@@ -12,6 +12,7 @@ namespace MarkovSuite
     public struct ChildWord
     {
         public string Data { get; set; }
+        public string StrippedData { get { return Markov.Strip(Data); } }
         public bool IsEnding { get; set; }
 
         public ChildWord (string Word, bool isEnding)
@@ -25,10 +26,46 @@ namespace MarkovSuite
     public class Word : INotifyPropertyChanged
     {
         public MarkovData Source { get; set; }
-        public string Data { get; set; }
-        public bool IsStarting { get; set; }
-        public bool IsEnding { get; set; }
         public ObservableCollection<ChildWord> Children { get; set; }
+        private string m_data = "";
+        public string Data
+        {
+            get { return m_data; }
+            set
+            {
+                if (m_data != value)
+                {
+                    m_data = value;
+                    NotifyPropertyChanged("Data");
+                }
+            }
+        }
+        private bool m_isStarting;
+        public bool IsStarting
+        {
+            get { return m_isStarting; }
+            set
+            {
+                if (m_isStarting != value)
+                {
+                    m_isStarting = value;
+                    NotifyPropertyChanged("IsStarting");
+                }
+            }
+        }
+        private bool m_isEnding;
+        public bool IsEnding
+        {
+            get { return m_isEnding; }
+            set
+            {
+                if (m_isEnding != value)
+                {
+                    m_isEnding = value;
+                    NotifyPropertyChanged("IsEnding");
+                }
+            }
+        }
         private int m_prevalence = 1;
         public int Prevalence
         {
@@ -39,7 +76,6 @@ namespace MarkovSuite
                 {
                     m_prevalence = value;
                     NotifyPropertyChanged("Prevalence");
-                    Source.NotifyPropertyChanged("Words");
                 }
             }
         }
@@ -49,6 +85,8 @@ namespace MarkovSuite
         public void NotifyPropertyChanged(string propName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+            if (Source != null)
+                Source.NotifyPropertyChanged("Words");
         }
 
         public Word(MarkovData source, string data, bool isStarting, bool isEnding)

@@ -75,7 +75,7 @@ namespace MarkovSuite
             return rtn;
         }
 
-        private static string Strip (string word)
+        public static string Strip (string word)
         {
             return word.Replace(".", "").Replace("!", "").Replace("?", "");
         }

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MarkovSuite"
         mc:Ignorable="d"
-        Height="450" Width="800" MinHeight="450" MinWidth="800">
+        Height="650" Width="1200" MinHeight="450" MinWidth="800">
     <Window.Resources>
         <local:TitleStringConverter x:Key="TitleStringConverter" />
     </Window.Resources>
@@ -20,6 +20,10 @@
         <CommandBinding Command="Open" CanExecute="CommonCommandBinding_CanExecute" Executed="OpenCommandBinding_Executed" />
         <CommandBinding Command="Save" CanExecute="SaveCommandBinding_CanExecute" Executed="SaveCommandBinding_Executed" />
         <CommandBinding Command="SaveAs" CanExecute="CommonCommandBinding_CanExecute" Executed="SaveAsCommandBinding_Executed" />
+
+        <CommandBinding Command="local:Commands.EditEntry" CanExecute="CommonEntryCommandBinding_CanExecute" Executed="EditEntryCommandBinding_Executed" />
+        <CommandBinding Command="local:Commands.DeleteEntry" CanExecute="CommonEntryCommandBinding_CanExecute" Executed="DeleteEntryCommandBinding_Executed" />
+        <CommandBinding Command="local:Commands.DeleteChild" CanExecute="DeleteChildCommandBinding_CanExecute" Executed="DeleteChildCommandBinding_Executed" />
     </Window.CommandBindings>
     <DockPanel>
         
@@ -40,6 +44,17 @@
                 </Button>
                 <Button Command="SaveAs" x:Name="SaveAsButton">
                     <Image Source="/Icons/SaveAs_16x.png" />
+                </Button>
+            </ToolBar>
+            <ToolBar>
+                <Button Command="local:Commands.EditEntry" x:Name="EditEntryButton" ToolTip="Edit selected entry">
+                    <Image Source="/Icons/Edit_16x.png" />
+                </Button>
+                <Button Command="local:Commands.DeleteEntry" x:Name="DeleteEntryButton" ToolTip="Delete selected entry">
+                    <Image Source="/Icons/DeleteCell_16x.png" />
+                </Button>
+                <Button Command="local:Commands.DeleteChild" x:Name="DeleteChildButton" ToolTip="Delete selected child">
+                    <Image Source="/Icons/DeleteClause_16x.png" />
                 </Button>
             </ToolBar>
         </ToolBarTray>
@@ -79,21 +94,31 @@
                 </Grid.ColumnDefinitions>
                 
                 <ListBox Grid.Column="0" Margin="5" x:Name="RootListBox" ItemsSource="{Binding Words}" HorizontalContentAlignment="Stretch" SelectionChanged="RootListBox_SelectionChanged">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="30" />
-                                <ColumnDefinition Width="20" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="{Binding Data}" />
-                            <TextBlock Grid.Column="1" Text="{Binding Prevalence, StringFormat='({0})'}" />
-                            <CheckBox Grid.Column="2" IsEnabled="false" IsChecked="{Binding IsStarting}" />
-                        </Grid>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="35" />
+                                    <ColumnDefinition Width="20" />
+                                    <ColumnDefinition Width="20" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding Data}" />
+                                <TextBlock Grid.Column="1" ToolTip="Word prevalence, Child count">
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="{}({0}, {1})">
+                                            <Binding Path="Prevalence" />
+                                            <Binding Path="Children.Count" />
+                                            <!--<Binding Path="DataContext.Words.Count" RelativeSource="{RelativeSource AncestorType=ListBox}" />-->
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                                <CheckBox Grid.Column="2" IsEnabled="False" IsChecked="{Binding IsStarting}" ToolTip="If this is a starting word" ToolTipService.ShowOnDisabled="True"/>
+                                <CheckBox Grid.Column="3" IsEnabled="False" IsChecked="{Binding IsEnding}" ToolTip="If this is an ending word" ToolTipService.ShowOnDisabled="True"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
 
                 <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch"/>
 
@@ -106,7 +131,7 @@
                                     <ColumnDefinition Width="20" />
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="{Binding Data}"/>
-                                <CheckBox Grid.Column="1" IsEnabled="false" IsChecked="{Binding IsEnding}" />
+                                <CheckBox Grid.Column="1" IsEnabled="false" IsChecked="{Binding IsEnding}" ToolTip="If this word is an ending word"/>
                             </Grid>
                         </DataTemplate>
                     </ListBox.ItemTemplate>

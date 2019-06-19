@@ -12,7 +12,11 @@ namespace MarkovSuite
 
         public static void Train (MarkovData context, string data)
         {
-            data = data.Replace("\r\n", " ").Replace("\n", " ").Replace("\r", " ");
+            Settings settings = Settings.Instance;
+
+            foreach (string r in settings.RowbreakChars)
+                data = data.Replace(r, " ");
+            data = data.Replace(System.Environment.NewLine, " ");
             string[] words = data.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
             Word cur, prev = null;
@@ -21,7 +25,15 @@ namespace MarkovSuite
             foreach(string word in words)
             {
                 w = word.ToLowerInvariant();
-                isEnding = w.EndsWith(".") || w.EndsWith("!") || w.EndsWith("?");
+                isEnding = false; // w.EndsWith(".") || w.EndsWith("!") || w.EndsWith("?");
+                foreach(char c in settings.TerminationChars)
+                {
+                    if(w.EndsWith(c.ToString()))
+                    {
+                        isEnding = true;
+                        break;
+                    }
+                }
 
                 if (prev != null && !isStarter)
                     prev.Children.Add(new ChildWord(w, isEnding));
@@ -77,7 +89,9 @@ namespace MarkovSuite
 
         public static string Strip (string word)
         {
-            return word.Replace(".", "").Replace("!", "").Replace("?", "");
+            foreach (char c in Settings.Instance.StripChars)
+                word = word.Replace(c.ToString(), "");
+            return word;
         }
     }
 }

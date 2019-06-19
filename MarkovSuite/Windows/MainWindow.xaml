@@ -57,6 +57,11 @@
                     <Image Source="/Icons/DeleteClause_16x.png" />
                 </Button>
             </ToolBar>
+            <ToolBar>
+                <Button x:Name="SettingsButton" ToolTip="Settings" Click="SettingsButton_Click">
+                    <Image Source="/Icons/Settings_16x.png" />
+                </Button>
+            </ToolBar>
         </ToolBarTray>
 
         <StatusBar DockPanel.Dock="Bottom" MinHeight="20">

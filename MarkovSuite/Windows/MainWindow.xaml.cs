@@ -1,14 +1,14 @@
-﻿using Microsoft.Win32;
+﻿using MarkovSuite.Windows;
+using Microsoft.Win32;
 using System;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Input;
+using System.Xml.Serialization;
 
 namespace MarkovSuite
 {
@@ -35,14 +35,55 @@ namespace MarkovSuite
         public MainWindow()
         {
             InitializeComponent();
+            InitSettings();
             InitContext(false);
             RowbreakCheckBox.Click += RowbreakCheckBox_Click;
         }
 
-        private void RowbreakCheckBox_Click(object sender, RoutedEventArgs e)
+        #region Settings
+
+        private void InitSettings ()
         {
-            updateContextValues();
+            if (!File.Exists(Settings.SettingsPath))    // no settings file found, create default
+            {
+                Settings.Instance = Settings.Defaults;
+                SaveSettings();
+            }
+            else
+            {       // file found, load the values
+                XmlSerializer serializer = new XmlSerializer(typeof(Settings));
+                serializer.UnknownAttribute += Serializer_UnknownAttribute;
+                serializer.UnknownNode += Serializer_UnknownNode;
+
+                FileStream fs = new FileStream(Settings.SettingsPath, FileMode.Open);
+                Settings.Instance = (Settings)serializer.Deserialize(fs);
+                fs.Close();
+            }
         }
+
+        private void Serializer_UnknownNode(object sender, XmlNodeEventArgs e)
+        {
+            Console.WriteLine("Unknown node >> " + e.Name + "\t" + e.Text); ;
+        }
+
+        private void Serializer_UnknownAttribute(object sender, XmlAttributeEventArgs e)
+        {
+            System.Xml.XmlAttribute attr = e.Attr;
+            Console.WriteLine("Unknown attribute >> " +
+            attr.Name + " = '" + attr.Value + "'");
+        }
+
+        private void SaveSettings ()
+        {
+            if (Settings.Instance == null) return;
+
+            XmlSerializer serializer = new XmlSerializer(typeof(Settings));
+            TextWriter writer = new StreamWriter(Settings.SettingsPath);
+            serializer.Serialize(writer, Settings.Instance);
+            writer.Close();
+        }
+
+        #endregion
 
         private void InitContext (bool clear = true)
         {
@@ -83,6 +124,8 @@ namespace MarkovSuite
             return MessageBox.Show(msg, "Save changes?", button, icon);
         }
 
+        #region GUI interaction
+
         private void LearnButton_Click(object sender, RoutedEventArgs e)
         {
             Markov.Train(Context, LearnTextBox.Text);
@@ -103,6 +146,19 @@ namespace MarkovSuite
             Context.StatusString = "Generated " + NumSentences.Value + " sentences";
         }
 
+        private void SettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            SettingsWindow window = new SettingsWindow();
+            bool? result = window.ShowDialog();
+            if (result == true)
+                SaveSettings();
+        }
+
+        private void RowbreakCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            updateContextValues();
+        }
+
         private void RootListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if(RootListBox.SelectedItem != null)
@@ -110,6 +166,10 @@ namespace MarkovSuite
                 ChildListBox.ItemsSource = (RootListBox.SelectedItem as Word).Children;
             }
         }
+
+        #endregion
+
+        #region Commands
 
         private void CommonCommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
@@ -272,18 +332,7 @@ namespace MarkovSuite
                 }
             }
         }
-    }
 
-    public class TitleStringConverter : IMultiValueConverter
-    {
-        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
-        {
-            return (string)values[0] + ((bool)values[1] ? "*" : "") + " | MarkovSuite";
-        }
-
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
-        {
-            throw new NotSupportedException("Cannot convert back");
-        }
+        #endregion
     }
 }

@@ -28,7 +28,6 @@ namespace MarkovSuite
             Target = target;
             tmp = new Word(null, target.Data, target.IsStarting, target.IsEnding) { Prevalence = target.Prevalence };
             DataContext = tmp;
-            /* set up ui elements */
         }
 
         private void OKButton_Click(object sender, RoutedEventArgs e)

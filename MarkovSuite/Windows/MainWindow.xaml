@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MarkovSuite"
+        xmlns:classes="clr-namespace:MarkovSuite.TreeViewFileExplorer"
         mc:Ignorable="d"
         Height="650" Width="1200" MinHeight="450" MinWidth="800">
     <Window.Resources>
@@ -152,11 +153,74 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <DockPanel DockPanel.Dock="Top" Height="Auto" Grid.Row="0" Margin="0,0,0,5">
-                    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right">
-                        <CheckBox IsChecked="{Binding AutoClear}" x:Name="AutoClearCheckBox" Content="Auto Clear" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                        <Button Content="Learn" Padding="5,2,5,2" Click="LearnButton_Click"/>
-                    </StackPanel>
-                    <TextBox x:Name="LearnTextBox" Margin="0,0,0,5" Text="The cat ate the dog.&#xD;&#xA;And all was well with the world." HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Visible" AcceptsReturn="True"/>
+
+                    <TabControl>
+                        <TabItem Header="Manual">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                
+                                <TextBox x:Name="LearnTextBox" Margin="5,5,5,0" Grid.Row="0" Text="The cat ate the dog.&#xD;&#xA;And all was well with the world." HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Visible" AcceptsReturn="True"/>
+                                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="1">
+                                    <CheckBox IsChecked="{Binding AutoClear}" x:Name="AutoClearCheckBox" Content="Auto Clear" VerticalAlignment="Center"/>
+                                    <Button Content="Learn" Padding="5,2,5,2" Margin="5" Click="LearnButton_Click" />
+                                </StackPanel>
+                            </Grid>
+                        </TabItem>
+                        <TabItem Header="Batch">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="50" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <!-- tree view -->
+
+                                    <TreeView Grid.Column="0" Margin="0,5,5,0" x:Name="treeView">
+                                        <TreeView.ItemContainerStyle>
+                                            <Style TargetType="{x:Type TreeViewItem}">
+                                                <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                                                <Setter Property="KeyboardNavigation.AcceptsReturn" Value="True" />
+                                            </Style>
+                                        </TreeView.ItemContainerStyle>
+                                        <TreeView.Resources>
+                                            <HierarchicalDataTemplate DataType="{x:Type classes:FileSystemObjectInfo}" ItemsSource="{Binding Path=Children}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Image Source="{Binding Path=ImageSource, UpdateSourceTrigger=PropertyChanged}" Margin="0,1,8,1"></Image>
+                                                    <TextBlock Text="{Binding Path=FileSystemInfo.Name}"></TextBlock>
+                                                </StackPanel>
+                                            </HierarchicalDataTemplate>
+                                        </TreeView.Resources>
+                                    </TreeView>
+                                    
+                                    <!-- end treeview -->
+
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="5">
+                                        <Button Padding="5" Width="30" Content=">" Margin="0,0,0,5" IsEnabled="False"/>
+                                        <Button Padding="5" Width="30" Content='&lt;' IsEnabled="False"/>
+                                        <Button Padding="5" Width="30" Content="&lt;&lt;" Margin="0,20,0,0" IsEnabled="false"/>
+                                    </StackPanel>
+
+                                    <ListBox Grid.Column="2" Margin="0,5,5,0">
+                                        
+                                    </ListBox>
+                                    
+                                </Grid>
+
+                                <Button Grid.Row="1" HorizontalAlignment="Right" Content="Learn" Margin="5" Padding="5,2,5,2"/>
+
+                            </Grid>
+                        </TabItem>
+                    </TabControl>
                 </DockPanel>
                 <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch" Margin="-5,0,0,0"/>
                 <DockPanel DockPanel.Dock="Top" Height="Auto" Grid.Row="2" Margin="0,5,0,0">

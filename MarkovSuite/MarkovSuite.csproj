@@ -52,6 +52,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -72,6 +73,14 @@
     </ApplicationDefinition>
     <Compile Include="Commands.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="TreeViewFileExplorer\BaseObject.cs" />
+    <Compile Include="TreeViewFileExplorer\Enums.cs" />
+    <Compile Include="TreeViewFileExplorer\FileManager.cs" />
+    <Compile Include="TreeViewFileExplorer\FileSystemObjectInfo.cs" />
+    <Compile Include="TreeViewFileExplorer\FolderManager.cs" />
+    <Compile Include="TreeViewFileExplorer\Interop.cs" />
+    <Compile Include="TreeViewFileExplorer\ShellFileInfo.cs" />
+    <Compile Include="TreeViewFileExplorer\ShellManager.cs" />
     <Compile Include="ValueConverters.cs" />
     <Compile Include="Windows\EditEntryWindow.xaml.cs">
       <DependentUpon>EditEntryWindow.xaml</DependentUpon>
@@ -164,6 +173,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icons\Settings_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="TreeViewFileExplorer\Author.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

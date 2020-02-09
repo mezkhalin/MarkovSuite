@@ -25,7 +25,7 @@ namespace MarkovSuite
             foreach(string word in words)
             {
                 w = word.ToLowerInvariant();
-                isEnding = false; // w.EndsWith(".") || w.EndsWith("!") || w.EndsWith("?");
+                isEnding = false;
                 foreach(char c in settings.TerminationChars)
                 {
                     if(w.EndsWith(c.ToString()))

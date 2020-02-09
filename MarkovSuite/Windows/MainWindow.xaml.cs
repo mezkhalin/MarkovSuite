@@ -1,4 +1,5 @@
-﻿using MarkovSuite.Windows;
+﻿using MarkovSuite.TreeViewFileExplorer;
+using MarkovSuite.Windows;
 using Microsoft.Win32;
 using System;
 using System.IO;
@@ -37,6 +38,7 @@ namespace MarkovSuite
             InitializeComponent();
             InitSettings();
             InitContext(false);
+            InitializeFileSystemObjects();
             RowbreakCheckBox.Click += RowbreakCheckBox_Click;
         }
 
@@ -110,6 +112,31 @@ namespace MarkovSuite
                     OutputTextBox.TextWrapping = TextWrapping.WrapWithOverflow;
                     break;
             }
+        }
+
+        /// <summary>
+        /// init for the treeview file explorer control
+        /// </summary>
+        private void InitializeFileSystemObjects()
+        {
+            var drives = DriveInfo.GetDrives();
+            DriveInfo.GetDrives().ToList().ForEach(drive =>
+            {
+                var fileSystemObject = new FileSystemObjectInfo(drive);
+                fileSystemObject.BeforeExplore += FileSystemObject_BeforeExplore;
+                fileSystemObject.AfterExplore += FileSystemObject_AfterExplore;
+                treeView.Items.Add(fileSystemObject);
+            });
+        }
+
+        private void FileSystemObject_AfterExplore(object sender, System.EventArgs e)
+        {
+            Cursor = Cursors.Arrow;
+        }
+
+        private void FileSystemObject_BeforeExplore(object sender, System.EventArgs e)
+        {
+            Cursor = Cursors.Wait;
         }
 
         private MessageBoxResult AskForSave()

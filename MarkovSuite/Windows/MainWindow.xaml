@@ -165,7 +165,7 @@
                                 <TextBox x:Name="LearnTextBox" Margin="5,5,5,0" Grid.Row="0" Text="The cat ate the dog.&#xD;&#xA;And all was well with the world." HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Visible" AcceptsReturn="True"/>
                                 <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="1">
                                     <CheckBox IsChecked="{Binding AutoClear}" x:Name="AutoClearCheckBox" Content="Auto Clear" VerticalAlignment="Center"/>
-                                    <Button Content="Learn" Padding="5,2,5,2" Margin="5" Click="LearnButton_Click" />
+                                    <Button Content="Learn" Padding="5,2,5,2" Margin="5" Click="LearnManualButton_Click" />
                                 </StackPanel>
                             </Grid>
                         </TabItem>
@@ -185,7 +185,7 @@
                                     
                                     <!-- tree view -->
 
-                                    <TreeView Grid.Column="0" Margin="0,5,5,0" x:Name="treeView">
+                                    <TreeView Grid.Column="0" Margin="5,5,0,0" x:Name="treeView">
                                         <TreeView.ItemContainerStyle>
                                             <Style TargetType="{x:Type TreeViewItem}">
                                                 <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
@@ -205,18 +205,25 @@
                                     <!-- end treeview -->
 
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="5">
-                                        <Button Padding="5" Width="30" Content=">" Margin="0,0,0,5" IsEnabled="False"/>
-                                        <Button Padding="5" Width="30" Content='&lt;' IsEnabled="False"/>
-                                        <Button Padding="5" Width="30" Content="&lt;&lt;" Margin="0,20,0,0" IsEnabled="false"/>
+                                        <Button x:Name="Batch_AddButton" Padding="5" Width="30" Content=">" Margin="0,0,0,5" IsEnabled="False" Click="Batch_AddButton_Click"/>
+                                        <Button x:Name="Batch_RemoveButton" Padding="5" Width="30" Content='&lt;' IsEnabled="False" Click="Batch_RemoveButton_Click"/>
+                                        <Button x:Name="Batch_ClearButton" Padding="5" Width="30" Content="&lt;&lt;" Margin="0,20,0,0" IsEnabled="false" Click="Batch_ClearButton_Click"/>
                                     </StackPanel>
 
-                                    <ListBox Grid.Column="2" Margin="0,5,5,0">
-                                        
+                                    <ListBox x:Name="BatchListBox" Grid.Column="2" Margin="0,5,5,0" ItemsSource="{Binding BatchFiles}" SelectionMode="Extended">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Image Source="{Binding Path=ImageSource, UpdateSourceTrigger=PropertyChanged}" Margin="0,1,8,1"></Image>
+                                                    <TextBlock Text="{Binding Path=FileSystemInfo.Name}"></TextBlock>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
                                     </ListBox>
                                     
                                 </Grid>
 
-                                <Button Grid.Row="1" HorizontalAlignment="Right" Content="Learn" Margin="5" Padding="5,2,5,2"/>
+                                <Button Grid.Row="1" HorizontalAlignment="Right" Content="Learn" Margin="5" Padding="5,2,5,2" Click="LearnBatchButton_Click"/>
 
                             </Grid>
                         </TabItem>

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MarkovSuite.TreeViewFileExplorer;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -124,6 +125,7 @@ namespace MarkovSuite
         public string FilePath { get; set; } = "";
         public string ChainName { get; set; } = "Untitled";
         public ObservableCollection<Word> Words { get; set; }
+        public ObservableCollection<FileSystemObjectInfo> BatchFiles { get; set; }
 
         [NonSerialized]
         private string m_statusString = "Idle...";
@@ -150,15 +152,17 @@ namespace MarkovSuite
         public MarkovData()
         {
             Words = new ObservableCollection<Word>();
+            BatchFiles = new ObservableCollection<FileSystemObjectInfo>();
             Init();
         }
 
         public void Init ()
         {
-            Words.CollectionChanged += Words_CollectionChanged;
+            Words.CollectionChanged += CollectionChanged;
+            BatchFiles.CollectionChanged += CollectionChanged;
         }
 
-        private void Words_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private void CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             HasChanged = true;
         }

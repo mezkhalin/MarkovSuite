@@ -40,7 +40,7 @@ namespace MarkovSuite.TreeViewFileExplorer
             PropertyChanged += new PropertyChangedEventHandler(FileSystemObjectInfo_PropertyChanged);
         }
         
-        void FileSystemObjectInfo_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void FileSystemObjectInfo_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (FileSystemInfo is DirectoryInfo)
             {
@@ -156,6 +156,7 @@ namespace MarkovSuite.TreeViewFileExplorer
             }
             if (FileSystemInfo is DirectoryInfo)
             {
+                ////    add try catch for access denied exception
                 var directories = ((DirectoryInfo)FileSystemInfo).GetDirectories();
                 foreach (var directory in directories.OrderBy(d => d.Name))
                 {
@@ -195,7 +196,8 @@ namespace MarkovSuite.TreeViewFileExplorer
                     if ((file.Attributes & FileAttributes.System) != FileAttributes.System &&
                         (file.Attributes & FileAttributes.Hidden) != FileAttributes.Hidden)
                     {
-                        Children.Add(new FileSystemObjectInfo(file));
+                        if(file.Extension == ".txt")
+                            Children.Add(new FileSystemObjectInfo(file));
                     }
                 }
             }

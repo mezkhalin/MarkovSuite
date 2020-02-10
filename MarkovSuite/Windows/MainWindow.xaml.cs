@@ -2,6 +2,7 @@
 using MarkovSuite.Windows;
 using Microsoft.Win32;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -114,11 +115,29 @@ namespace MarkovSuite
             }
         }
 
+        private MessageBoxResult AskForSave()
+        {
+            if (!Context.HasChanged)
+                return MessageBoxResult.No;
+
+            string msg = "Changes have been made. Do you want to save them?";
+            MessageBoxButton button = MessageBoxButton.YesNoCancel;
+            MessageBoxImage icon = MessageBoxImage.Warning;
+
+            return MessageBox.Show(msg, "Save changes?", button, icon);
+        }
+
+        #region TreeView Control
+
         /// <summary>
         /// init for the treeview file explorer control
         /// </summary>
         private void InitializeFileSystemObjects()
         {
+            treeView.SelectedItemChanged += TreeView_SelectedItemChanged;
+            BatchListBox.SelectionChanged += BatchListBox_SelectedItemChanged;
+            Context.BatchFiles.CollectionChanged += BatchFiles_CollectionChanged;
+
             var drives = DriveInfo.GetDrives();
             DriveInfo.GetDrives().ToList().ForEach(drive =>
             {
@@ -139,25 +158,92 @@ namespace MarkovSuite
             Cursor = Cursors.Wait;
         }
 
-        private MessageBoxResult AskForSave()
+        private void TreeView_SelectedItemChanged(object sender,  EventArgs e)
         {
-            if (!Context.HasChanged)
-                return MessageBoxResult.No;
-
-            string msg = "Changes have been made. Do you want to save them?";
-            MessageBoxButton button = MessageBoxButton.YesNoCancel;
-            MessageBoxImage icon = MessageBoxImage.Warning;
-
-            return MessageBox.Show(msg, "Save changes?", button, icon);
+            Batch_AddButton.IsEnabled = treeView.SelectedItem != null;
         }
+
+        private void BatchListBox_SelectedItemChanged(object sender, EventArgs e)
+        {
+            Batch_RemoveButton.IsEnabled = BatchListBox.SelectedItem != null;
+        }
+
+        private void BatchFiles_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            Batch_ClearButton.IsEnabled = Context.BatchFiles.Count > 0;
+        }
+
+        #endregion
 
         #region GUI interaction
 
-        private void LearnButton_Click(object sender, RoutedEventArgs e)
+        private void Batch_AddButton_Click (object sender, RoutedEventArgs e)
+        {
+            Context.BatchFiles.Add((FileSystemObjectInfo)treeView.SelectedItem);
+        }
+
+        private void Batch_RemoveButton_Click(object sender, RoutedEventArgs e)
+        {
+            object[] selections = new object[BatchListBox.SelectedItems.Count];
+            BatchListBox.SelectedItems.CopyTo(selections, 0);
+
+            foreach(object selection in selections)
+            {
+                Context.BatchFiles.Remove((FileSystemObjectInfo)selection);
+            }
+        }
+
+        private void Batch_ClearButton_Click(object sender, RoutedEventArgs e)
+        {
+            //////       should ask user before
+            Context.BatchFiles.Clear();
+        }
+
+        private void LearnManualButton_Click(object sender, RoutedEventArgs e)
         {
             Markov.Train(Context, LearnTextBox.Text);
             if (Context.AutoClear)
                 LearnTextBox.Text = "";
+        }
+
+        private void LearnBatchButton_Click(object sender, RoutedEventArgs e)
+        {
+            foreach(FileSystemObjectInfo info in Context.BatchFiles)
+            {
+                recursiveLearnFromFile(info);
+            }
+        }
+
+        private void recursiveLearnFromFile (FileSystemObjectInfo info, bool recurse = false)
+        {
+            if((info.FileSystemInfo.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+            {
+                var files = Directory.EnumerateFiles(info.FileSystemInfo.FullName, "*.*", SearchOption.TopDirectoryOnly)
+                            .Where(s => s.EndsWith(".txt", StringComparison.OrdinalIgnoreCase));
+
+                foreach (string path in files)
+                {
+                    FileInfo fi = new FileInfo(path);
+                    FileSystemObjectInfo fsoi = new FileSystemObjectInfo(fi);
+                    recursiveLearnFromFile(fsoi);
+                }
+            }
+            else
+            {
+                try
+                {
+                    using (StreamReader sr = new StreamReader(info.FileSystemInfo.FullName))
+                    {
+                        string line = sr.ReadToEnd();
+                        Markov.Train(Context, line);
+                    }
+                }
+                catch (IOException ex)
+                {
+                    Console.WriteLine("The file could not be read:");
+                    Console.WriteLine(ex.Message);
+                }
+            }
         }
 
         private void GenerateButton_Click(object sender, RoutedEventArgs e)

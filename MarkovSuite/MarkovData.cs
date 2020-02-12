@@ -10,6 +10,19 @@ using System.Threading.Tasks;
 namespace MarkovSuite
 {
     [Serializable]
+    public struct LogEntry
+    {
+        public double LogTime;
+        public string Message;
+
+        public LogEntry (string msg)
+        {
+            LogTime = (DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+            Message = msg;
+        }
+    }
+
+    [Serializable]
     public struct ChildWord
     {
         public string Data { get; set; }
@@ -126,17 +139,11 @@ namespace MarkovSuite
         public string ChainName { get; set; } = "Untitled";
         public ObservableCollection<Word> Words { get; set; }
         public ObservableCollection<FileSystemObjectInfo> BatchFiles { get; set; }
-
-        [NonSerialized]
-        private string m_statusString = "Idle...";
-        public string StatusString
+        public ObservableCollection<LogEntry> Log { get; set; }
+        
+        public string LogString
         {
-            get { return m_statusString; }
-            set
-            {
-                m_statusString = value;
-                NotifyPropertyChanged("StatusString");
-            }
+            get { return (Log.Count > 0) ? Log[Log.Count-1].Message : ""; }
         }
         public bool AutoClear { get; set; } = false;        // auto clear input box after learning
         public bool AutoRowbreak { get; set; } = false;     // auto rowbreak output box
@@ -153,6 +160,7 @@ namespace MarkovSuite
         {
             Words = new ObservableCollection<Word>();
             BatchFiles = new ObservableCollection<FileSystemObjectInfo>();
+            Log = new ObservableCollection<LogEntry>();
             Init();
         }
 
@@ -160,6 +168,13 @@ namespace MarkovSuite
         {
             Words.CollectionChanged += CollectionChanged;
             BatchFiles.CollectionChanged += CollectionChanged;
+            Log.CollectionChanged += CollectionChanged;
+            Log.CollectionChanged += LogChanged;
+        }
+
+        private void LogChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            NotifyPropertyChanged("LogString");
         }
 
         private void CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)

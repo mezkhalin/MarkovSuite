@@ -27,12 +27,17 @@ namespace MarkovSuite
                 if(m_appSavePath == null || m_appSavePath == "")
                     m_appSavePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\MarkovSuite\\";
 
-                System.IO.Directory.CreateDirectory(m_appSavePath);
+                Directory.CreateDirectory(m_appSavePath);
                 return m_appSavePath;
             }
         }
 
-        private MarkovData Context;
+        public static MarkovData Context;
+
+        public static void Log (string msg)
+        {
+            Context.Log.Add(new LogEntry(msg));
+        }
 
         public MainWindow()
         {
@@ -66,14 +71,13 @@ namespace MarkovSuite
 
         private void Serializer_UnknownNode(object sender, XmlNodeEventArgs e)
         {
-            Console.WriteLine("Unknown node >> " + e.Name + "\t" + e.Text); ;
+            Log("Unknown node found during deserialization:\nName\t" + e.Name + "\nValue\t" + e.Text);
         }
 
         private void Serializer_UnknownAttribute(object sender, XmlAttributeEventArgs e)
         {
-            System.Xml.XmlAttribute attr = e.Attr;
-            Console.WriteLine("Unknown attribute >> " +
-            attr.Name + " = '" + attr.Value + "'");
+            System.Xml.XmlAttribute a = e.Attr;
+            Log("Unknown attribute found during deserialization:\nName\t" + a.Name + "\nValue\t" + a.Value);
         }
 
         private void SaveSettings ()
@@ -84,6 +88,8 @@ namespace MarkovSuite
             TextWriter writer = new StreamWriter(Settings.SettingsPath);
             serializer.Serialize(writer, Settings.Instance);
             writer.Close();
+
+            Log("Successfully saved settings");
         }
 
         #endregion
@@ -94,8 +100,7 @@ namespace MarkovSuite
             Context = new MarkovData();
             DataContext = Context;
             updateContextValues();
-
-            Context.StatusString = "Initialized";
+            
             Context.HasChanged = false; // ugly fix for when haschanged = true on new context
         }
 
@@ -195,13 +200,16 @@ namespace MarkovSuite
 
         private void Batch_ClearButton_Click(object sender, RoutedEventArgs e)
         {
-            //////       should ask user before
-            Context.BatchFiles.Clear();
+            if(MessageBox.Show("Clear all entries from training batch?", "Are you sure?", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                Context.BatchFiles.Clear();
         }
 
         private void LearnManualButton_Click(object sender, RoutedEventArgs e)
         {
             Markov.Train(Context, LearnTextBox.Text);
+
+            Log("Manual training complete");
+
             if (Context.AutoClear)
                 LearnTextBox.Text = "";
         }
@@ -212,6 +220,11 @@ namespace MarkovSuite
             {
                 recursiveLearnFromFile(info);
             }
+
+            Log("Batch training complete");
+
+            if (Context.AutoClear)
+                Context.BatchFiles.Clear();
         }
 
         private void recursiveLearnFromFile (FileSystemObjectInfo info, bool recurse = false)
@@ -236,12 +249,12 @@ namespace MarkovSuite
                     {
                         string line = sr.ReadToEnd();
                         Markov.Train(Context, line);
+                        Log("Batched file training complete");
                     }
                 }
                 catch (IOException ex)
                 {
-                    Console.WriteLine("The file could not be read:");
-                    Console.WriteLine(ex.Message);
+                    Log("Error: The file could not be read:\n" + ex.Message);
                 }
             }
         }
@@ -256,7 +269,7 @@ namespace MarkovSuite
             output += "\r\n\r\n";
             OutputTextBox.Text += output;
 
-            Context.StatusString = "Generated " + NumSentences.Value + " sentences";
+            Log("Generated " + NumSentences.Value + " sentences");
         }
 
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
@@ -315,7 +328,6 @@ namespace MarkovSuite
             switch(result)
             {
                 case MessageBoxResult.Cancel:
-                    Context.StatusString = "Canceled by user";
                     return;
                 case MessageBoxResult.No:
                     InitContext();
@@ -329,12 +341,10 @@ namespace MarkovSuite
 
         private void OpenCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            Context.StatusString = "Opening file...";
             MessageBoxResult sresult = AskForSave();
             switch (sresult)
             {
                 case MessageBoxResult.Cancel:
-                    Context.StatusString = "Canceled by user";
                     return;
                 case MessageBoxResult.Yes:
                     SaveCommandBinding_Executed(sender, e);
@@ -352,14 +362,14 @@ namespace MarkovSuite
             if (result == true && openDialog.FileName != "")
             {
                 IFormatter formatter = new BinaryFormatter();
-                Stream stream = new FileStream(openDialog.FileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+                Stream stream = new FileStream(openDialog.FileName, FileMode.Open, FileAccess.Read, FileShare.Read);    /////// add try/catch clause
                 MarkovData data = (MarkovData)formatter.Deserialize(stream);
                 stream.Close();
 
                 Context = data;
                 DataContext = Context;
 
-                Context.StatusString = "Opened file " + Context.FilePath;
+                Log("Successfully opened file " + Context.FilePath);
             }
         }
 
@@ -371,7 +381,6 @@ namespace MarkovSuite
 
         private void SaveCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            Context.StatusString = "Saving file...";
             bool? result;
 
             if (Context.FilePath != "" || Context.FilePath == null)     // context already has a file path
@@ -392,15 +401,13 @@ namespace MarkovSuite
 
             if (result == true)
             {
-                Context.StatusString = "Saving file...";
-
                 IFormatter formatter = new BinaryFormatter();
-                Stream stream = new FileStream(Context.FilePath, FileMode.Create, FileAccess.Write, FileShare.None);
+                Stream stream = new FileStream(Context.FilePath, FileMode.Create, FileAccess.Write, FileShare.None);        ////// try/catch
                 Context.HasChanged = false;
                 formatter.Serialize(stream, Context);
                 stream.Close();
 
-                Context.StatusString = "Saved file to " + Context.FilePath;
+                Log("Successfully saved file to " + Context.FilePath);
             }
         }
 
@@ -412,7 +419,8 @@ namespace MarkovSuite
 
         private void DeleteEntryCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            MessageBoxResult result = MessageBox.Show("Are you sure? Deleting this entry will also delete all of its children.", "Delete entry?", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
+            MessageBoxResult result = MessageBox.Show("Are you sure? Deleting this entry will also delete all of its children.",
+                                                        "Delete entry?", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
             if (result == MessageBoxResult.Cancel) return;
 
             ChildListBox.ItemsSource = null;
@@ -441,7 +449,7 @@ namespace MarkovSuite
                 }
                 catch(Exception ex)
                 {
-                    MessageBox.Show("Error:\r\n" + ex.Message, "Error happens", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Log("Error:\n" + ex.Message);
                 }
             }
         }

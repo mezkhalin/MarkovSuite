@@ -78,7 +78,7 @@
             </StatusBar.ItemsPanel>
 
             <StatusBarItem Grid.Column="0">
-                <TextBlock x:Name="StatusLabel" Text="{Binding Path=StatusString, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBlock x:Name="LogLabel" Text="{Binding Path=LogString, UpdateSourceTrigger=PropertyChanged}"/>
             </StatusBarItem>
             <StatusBarItem Grid.Column="1" HorizontalContentAlignment="Center">
                 <ProgressBar Width="180" x:Name="ProgressBar" />
@@ -164,7 +164,7 @@
                                 
                                 <TextBox x:Name="LearnTextBox" Margin="5,5,5,0" Grid.Row="0" Text="The cat ate the dog.&#xD;&#xA;And all was well with the world." HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Visible" AcceptsReturn="True"/>
                                 <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="1">
-                                    <CheckBox IsChecked="{Binding AutoClear}" x:Name="AutoClearCheckBox" Content="Auto Clear" VerticalAlignment="Center"/>
+                                    <CheckBox IsChecked="{Binding AutoClear}" x:Name="AutoClearCheckBox" Content="Clear Post Learning" VerticalAlignment="Center" Margin="0,0,5,0"/>
                                     <Button Content="Learn" Padding="5,2,5,2" Margin="5" Click="LearnManualButton_Click" />
                                 </StackPanel>
                             </Grid>
@@ -223,7 +223,10 @@
                                     
                                 </Grid>
 
-                                <Button Grid.Row="1" HorizontalAlignment="Right" Content="Learn" Margin="5" Padding="5,2,5,2" Click="LearnBatchButton_Click"/>
+                                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="1">
+                                    <CheckBox IsChecked="{Binding AutoClear}" Content="Clear Post Learning" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                    <Button HorizontalAlignment="Right" Content="Learn" Margin="5" Padding="5,2,5,2" Click="LearnBatchButton_Click"/>
+                                </StackPanel>
 
                             </Grid>
                         </TabItem>
@@ -238,7 +241,7 @@
                             <TextBlock Text="sentences" Padding="5,1,0,0"/>
                         </StackPanel>
                         <Button DockPanel.Dock="Right" HorizontalAlignment="Right" Content="Generate" Padding="5,2,5,2" Click="GenerateButton_Click"/>
-                        <CheckBox IsChecked="{Binding AutoRowbreak}" x:Name="RowbreakCheckBox" DockPanel.Dock="Right" HorizontalAlignment="Right" Content="Rowbreak" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                        <CheckBox IsChecked="{Binding AutoRowbreak}" x:Name="RowbreakCheckBox" DockPanel.Dock="Right" HorizontalAlignment="Right" Content="Create Rowbreaks" VerticalAlignment="Center" Margin="0,0,10,0"/>
                     </DockPanel>
                     <TextBox x:Name="OutputTextBox" Margin="0,0,0,5" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" AcceptsReturn="True"/>
                 </DockPanel>

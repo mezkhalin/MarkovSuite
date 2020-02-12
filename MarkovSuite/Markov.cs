@@ -22,8 +22,9 @@ namespace MarkovSuite
             Word cur, prev = null;
             bool isStarter = true, isEnding;
             string w;
-            foreach(string word in words)
+            for(int i = 0; i < words.Length; i++)
             {
+                string word = words[i];
                 w = word.ToLowerInvariant();
                 isEnding = false;
                 foreach(char c in settings.TerminationChars)
@@ -34,6 +35,8 @@ namespace MarkovSuite
                         break;
                     }
                 }
+
+                if (i == words.Length - 1) isEnding = true;
 
                 if (prev != null && !isStarter)
                     prev.Children.Add(new ChildWord(w, isEnding));

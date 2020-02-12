@@ -78,7 +78,9 @@
             </StatusBar.ItemsPanel>
 
             <StatusBarItem Grid.Column="0">
-                <TextBlock x:Name="LogLabel" Text="{Binding Path=LogString, UpdateSourceTrigger=PropertyChanged}"/>
+                <Button Click="OpenLogWindow_Click">
+                    <TextBlock x:Name="LogLabel" Text="{Binding Path=LogString, UpdateSourceTrigger=PropertyChanged}"/>
+                </Button>
             </StatusBarItem>
             <StatusBarItem Grid.Column="1" HorizontalContentAlignment="Center">
                 <ProgressBar Width="180" x:Name="ProgressBar" />

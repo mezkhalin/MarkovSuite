@@ -46,6 +46,8 @@ namespace MarkovSuite
             InitContext(false);
             InitializeFileSystemObjects();
             RowbreakCheckBox.Click += RowbreakCheckBox_Click;
+
+            Log("Startup");
         }
 
         #region Settings
@@ -291,6 +293,11 @@ namespace MarkovSuite
             {
                 ChildListBox.ItemsSource = (RootListBox.SelectedItem as Word).Children;
             }
+        }
+
+        private void OpenLogWindow_Click(object sender, RoutedEventArgs e)
+        {
+            new LogWindow().Show();
         }
 
         #endregion

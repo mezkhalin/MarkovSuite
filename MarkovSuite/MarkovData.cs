@@ -12,8 +12,8 @@ namespace MarkovSuite
     [Serializable]
     public struct LogEntry
     {
-        public double LogTime;
-        public string Message;
+        public double LogTime { get; set; }
+        public string Message { get; set; }
 
         public LogEntry (string msg)
         {

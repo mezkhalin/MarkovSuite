@@ -47,6 +47,8 @@ namespace MarkovSuite
             InitializeFileSystemObjects();
             RowbreakCheckBox.Click += RowbreakCheckBox_Click;
 
+            Context.HasChanged = false; // ugly fix for when haschanged = true on new context
+
             Log("Startup");
         }
 
@@ -102,8 +104,6 @@ namespace MarkovSuite
             Context = new MarkovData();
             DataContext = Context;
             updateContextValues();
-            
-            Context.HasChanged = false; // ugly fix for when haschanged = true on new context
         }
 
         /// <summary>
@@ -295,9 +295,11 @@ namespace MarkovSuite
             }
         }
 
-        private void OpenLogWindow_Click(object sender, RoutedEventArgs e)
+        private void LogLabel_PreviewMouseUp(object sender, MouseButtonEventArgs e)
         {
-            new LogWindow().Show();
+            LogWindow logwin = LogWindow.Window;
+            logwin.Show();
+            logwin.Activate();
         }
 
         #endregion

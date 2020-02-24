@@ -153,7 +153,7 @@ namespace MarkovSuite
         public void NotifyPropertyChanged(string propName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
-            if(propName != "HasChanged") HasChanged = true;
+            if(propName == "HasChanged") HasChanged = true;
         }
 
         public MarkovData()
@@ -168,7 +168,6 @@ namespace MarkovSuite
         {
             Words.CollectionChanged += CollectionChanged;
             BatchFiles.CollectionChanged += CollectionChanged;
-            Log.CollectionChanged += CollectionChanged;
             Log.CollectionChanged += LogChanged;
         }
 

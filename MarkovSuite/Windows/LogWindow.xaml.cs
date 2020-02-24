@@ -19,6 +19,18 @@ namespace MarkovSuite.Windows
     /// </summary>
     public partial class LogWindow : Window
     {
+        private static LogWindow _logWindow;
+        public static LogWindow Window
+        {
+            get
+            {
+                if (_logWindow == null)
+                    _logWindow = new LogWindow();
+
+                return _logWindow;
+            }
+        }
+
         public LogWindow()
         {
             InitializeComponent();

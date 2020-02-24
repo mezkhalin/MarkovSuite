@@ -29,7 +29,20 @@
     <DockPanel>
         
         <Menu DockPanel.Dock="Top">
-            <MenuItem Header="_File" />
+            <MenuItem Header="_File">
+                <MenuItem Header="_New" Command="New" />
+                <MenuItem Header="_Open" Command="Open" />
+                <Separator />
+                <MenuItem Header="_Save" Command="Save" />
+                <MenuItem Header="Save _As" Command="SaveAs" />
+            </MenuItem>
+            <MenuItem Header="_Edit">
+                <MenuItem Header="_Edit Entry" Command="local:Commands.EditEntry" />
+                <MenuItem Header="_Delete Entry" Command="local:Commands.DeleteEntry" />
+                <MenuItem Header="Delete _Child" Command="local:Commands.DeleteChild" />
+                <Separator />
+                <MenuItem Header="_Settings" Click="SettingsButton_Click" />
+            </MenuItem>
         </Menu>
 
         <ToolBarTray DockPanel.Dock="Top">
@@ -41,21 +54,61 @@
                     <Image Source="/Icons/OpenFolder_16x.png" />
                 </Button>
                 <Button Command="Save" x:Name="SaveButton">
-                    <Image Source="/Icons/Save_16x.png" />
+                    <Image Source="/Icons/Save_16x.png">
+                        <Image.Style>
+                            <Style TargetType="Image">
+                                <Style.Triggers>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter Property="Opacity" Value=".25" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Image.Style>
+                    </Image>
                 </Button>
                 <Button Command="SaveAs" x:Name="SaveAsButton">
                     <Image Source="/Icons/SaveAs_16x.png" />
                 </Button>
             </ToolBar>
             <ToolBar>
-                <Button Command="local:Commands.EditEntry" x:Name="EditEntryButton" ToolTip="Edit selected entry">
-                    <Image Source="/Icons/Edit_16x.png" />
+                <Button Command="local:Commands.EditEntry" x:Name="EditEntryButton" ToolTip="Edit entry">
+                    <Image Source="/Icons/Edit_16x.png">
+                        <Image.Style>
+                            <Style TargetType="Image">
+                                <Style.Triggers>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter Property="Opacity" Value=".25" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Image.Style>
+                    </Image>
                 </Button>
-                <Button Command="local:Commands.DeleteEntry" x:Name="DeleteEntryButton" ToolTip="Delete selected entry">
-                    <Image Source="/Icons/DeleteCell_16x.png" />
+                <Button Command="local:Commands.DeleteEntry" x:Name="DeleteEntryButton" ToolTip="Delete entry">
+                    <Image Source="/Icons/DeleteCell_16x.png">
+                        <Image.Style>
+                            <Style TargetType="Image">
+                                <Style.Triggers>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter Property="Opacity" Value=".25" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Image.Style>
+                    </Image>
                 </Button>
-                <Button Command="local:Commands.DeleteChild" x:Name="DeleteChildButton" ToolTip="Delete selected child">
-                    <Image Source="/Icons/DeleteClause_16x.png" />
+                <Button Command="local:Commands.DeleteChild" x:Name="DeleteChildButton" ToolTip="Delete child">
+                    <Image Source="/Icons/DeleteClause_16x.png">
+                        <Image.Style>
+                            <Style TargetType="Image">
+                                <Style.Triggers>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter Property="Opacity" Value=".25" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Image.Style>
+                    </Image>
                 </Button>
             </ToolBar>
             <ToolBar>
@@ -77,10 +130,9 @@
                 </ItemsPanelTemplate>
             </StatusBar.ItemsPanel>
 
-            <StatusBarItem Grid.Column="0">
-                <Button Click="OpenLogWindow_Click">
-                    <TextBlock x:Name="LogLabel" Text="{Binding Path=LogString, UpdateSourceTrigger=PropertyChanged}"/>
-                </Button>
+            <StatusBarItem Grid.Column="0" HorizontalContentAlignment="Stretch" Padding="5,0,5,0">
+                <TextBlock x:Name="LogLabel" Text="{Binding Path=LogString, UpdateSourceTrigger=PropertyChanged}"
+                           PreviewMouseUp="LogLabel_PreviewMouseUp" />
             </StatusBarItem>
             <StatusBarItem Grid.Column="1" HorizontalContentAlignment="Center">
                 <ProgressBar Width="180" x:Name="ProgressBar" />

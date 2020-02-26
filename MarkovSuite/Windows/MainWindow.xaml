@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:MarkovSuite"
         xmlns:classes="clr-namespace:MarkovSuite.TreeViewFileExplorer"
         mc:Ignorable="d"
-        Height="650" Width="1200" MinHeight="450" MinWidth="800">
+        Height="650" Width="1200" MinHeight="450" MinWidth="800"
+        Closing="Window_Closing">
     <Window.Resources>
         <local:TitleStringConverter x:Key="TitleStringConverter" />
     </Window.Resources>
@@ -135,7 +136,7 @@
                            PreviewMouseUp="LogLabel_PreviewMouseUp" />
             </StatusBarItem>
             <StatusBarItem Grid.Column="1" HorizontalContentAlignment="Center">
-                <ProgressBar Width="180" x:Name="ProgressBar" />
+                <ProgressBar Width="180" x:Name="ProgressBar" Height="5" />
             </StatusBarItem>
         </StatusBar>
 
@@ -164,7 +165,7 @@
                                     <ColumnDefinition Width="20" />
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="{Binding Data}" />
-                                <TextBlock Grid.Column="1" ToolTip="Word prevalence, Child count">
+                                <TextBlock Grid.Column="1" ToolTip="(Word Prevalence, Child Count)">
                                     <TextBlock.Text>
                                         <MultiBinding StringFormat="{}({0}, {1})">
                                             <Binding Path="Prevalence" />
@@ -173,8 +174,8 @@
                                         </MultiBinding>
                                     </TextBlock.Text>
                                 </TextBlock>
-                                <CheckBox Grid.Column="2" IsEnabled="False" IsChecked="{Binding IsStarting}" ToolTip="If this is a starting word" ToolTipService.ShowOnDisabled="True"/>
-                                <CheckBox Grid.Column="3" IsEnabled="False" IsChecked="{Binding IsEnding}" ToolTip="If this is an ending word" ToolTipService.ShowOnDisabled="True"/>
+                                <CheckBox Grid.Column="2" IsEnabled="False" IsChecked="{Binding IsStarting}" ToolTip="Starting Word" ToolTipService.ShowOnDisabled="True"/>
+                                <CheckBox Grid.Column="3" IsEnabled="False" IsChecked="{Binding IsEnding}" ToolTip="Ending Word" ToolTipService.ShowOnDisabled="True"/>
                             </Grid>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
@@ -191,7 +192,7 @@
                                     <ColumnDefinition Width="20" />
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="{Binding Data}"/>
-                                <CheckBox Grid.Column="1" IsEnabled="false" IsChecked="{Binding IsEnding}" ToolTip="If this word is an ending word"/>
+                                <CheckBox Grid.Column="1" IsEnabled="false" IsChecked="{Binding IsEnding}" ToolTip="Ending Word"/>
                             </Grid>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
@@ -208,7 +209,12 @@
                 </Grid.RowDefinitions>
                 <DockPanel DockPanel.Dock="Top" Height="Auto" Grid.Row="0" Margin="0,0,0,5">
 
-                    <TabControl>
+                    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Height="35">
+                        <CheckBox IsChecked="{Binding AutoClear}" x:Name="AutoClearCheckBox" Content="Clear Post Learning" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                        <Button Content="Learn" Padding="5,2,5,2" Margin="5" Click="LearnButton_Click" />
+                    </StackPanel>
+
+                    <TabControl x:Name="LearnTab">
                         <TabItem Header="Manual">
                             <Grid>
                                 <Grid.RowDefinitions>
@@ -216,11 +222,8 @@
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
                                 
-                                <TextBox x:Name="LearnTextBox" Margin="5,5,5,0" Grid.Row="0" Text="The cat ate the dog.&#xD;&#xA;And all was well with the world." HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Visible" AcceptsReturn="True"/>
-                                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="1">
-                                    <CheckBox IsChecked="{Binding AutoClear}" x:Name="AutoClearCheckBox" Content="Clear Post Learning" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                                    <Button Content="Learn" Padding="5,2,5,2" Margin="5" Click="LearnManualButton_Click" />
-                                </StackPanel>
+                                <TextBox x:Name="LearnTextBox" Margin="5" Grid.Row="0" Text="The cat ate the dog.&#xD;&#xA;And all was well with the world." 
+                                         HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Visible" AcceptsReturn="True"/>
                             </Grid>
                         </TabItem>
                         <TabItem Header="Batch">
@@ -236,10 +239,10 @@
                                         <ColumnDefinition Width="50" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
-                                    
+
                                     <!-- tree view -->
 
-                                    <TreeView Grid.Column="0" Margin="5,5,0,0" x:Name="treeView">
+                                    <TreeView Grid.Column="0" Margin="5,5,0,5" x:Name="treeView">
                                         <TreeView.ItemContainerStyle>
                                             <Style TargetType="{x:Type TreeViewItem}">
                                                 <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
@@ -255,7 +258,7 @@
                                             </HierarchicalDataTemplate>
                                         </TreeView.Resources>
                                     </TreeView>
-                                    
+
                                     <!-- end treeview -->
 
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="5">
@@ -264,7 +267,7 @@
                                         <Button x:Name="Batch_ClearButton" Padding="5" Width="30" Content="&lt;&lt;" Margin="0,20,0,0" IsEnabled="false" Click="Batch_ClearButton_Click"/>
                                     </StackPanel>
 
-                                    <ListBox x:Name="BatchListBox" Grid.Column="2" Margin="0,5,5,0" ItemsSource="{Binding BatchFiles}" SelectionMode="Extended">
+                                    <ListBox x:Name="BatchListBox" Grid.Column="2" Margin="0,5,5,5" ItemsSource="{Binding BatchFiles}" SelectionMode="Extended">
                                         <ListBox.ItemTemplate>
                                             <DataTemplate>
                                                 <StackPanel Orientation="Horizontal">
@@ -274,17 +277,13 @@
                                             </DataTemplate>
                                         </ListBox.ItemTemplate>
                                     </ListBox>
-                                    
-                                </Grid>
 
-                                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="1">
-                                    <CheckBox IsChecked="{Binding AutoClear}" Content="Clear Post Learning" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                                    <Button HorizontalAlignment="Right" Content="Learn" Margin="5" Padding="5,2,5,2" Click="LearnBatchButton_Click"/>
-                                </StackPanel>
+                                </Grid>
 
                             </Grid>
                         </TabItem>
                     </TabControl>
+
                 </DockPanel>
                 <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch" Margin="-5,0,0,0"/>
                 <DockPanel DockPanel.Dock="Top" Height="Auto" Grid.Row="2" Margin="0,5,0,0">

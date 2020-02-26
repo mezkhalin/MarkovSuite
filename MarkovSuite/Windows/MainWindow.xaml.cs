@@ -46,7 +46,7 @@ namespace MarkovSuite
             InitContext(false);
             InitializeFileSystemObjects();
             RowbreakCheckBox.Click += RowbreakCheckBox_Click;
-
+            
             Context.HasChanged = false; // ugly fix for when haschanged = true on new context
 
             Log("Startup");
@@ -206,7 +206,20 @@ namespace MarkovSuite
                 Context.BatchFiles.Clear();
         }
 
-        private void LearnManualButton_Click(object sender, RoutedEventArgs e)
+        private void LearnButton_Click(object sender, RoutedEventArgs e)
+        {
+            switch(LearnTab.SelectedIndex)
+            {
+                case 0:
+                    LearnManual();
+                    return;
+                case 1:
+                    LearnBatch();
+                    return;
+            }
+        }
+
+        private void LearnManual()
         {
             Markov.Train(Context, LearnTextBox.Text);
 
@@ -216,8 +229,14 @@ namespace MarkovSuite
                 LearnTextBox.Text = "";
         }
 
-        private void LearnBatchButton_Click(object sender, RoutedEventArgs e)
+        private void LearnBatch()
         {
+            if(Context.BatchFiles.Count == 0)
+            {
+                Log("No files to train from");
+                return;
+            }
+
             foreach(FileSystemObjectInfo info in Context.BatchFiles)
             {
                 recursiveLearnFromFile(info);
@@ -300,6 +319,20 @@ namespace MarkovSuite
             LogWindow logwin = LogWindow.Window;
             logwin.Show();
             logwin.Activate();
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            MessageBoxResult result = AskForSave();
+            switch (result)
+            {
+                case MessageBoxResult.Yes:
+                    SaveCommandBinding_Executed(null, null);
+                    break;
+                case MessageBoxResult.Cancel:
+                    e.Cancel = true;
+                    break;
+            }
         }
 
         #endregion

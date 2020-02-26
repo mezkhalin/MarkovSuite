@@ -10,6 +10,7 @@ using System.Windows.Media;
 
 namespace MarkovSuite.TreeViewFileExplorer
 {
+    [Serializable]
     public class FileSystemObjectInfo : BaseObject
     {
         public FileSystemObjectInfo(DriveInfo drive)
